@@ -66,8 +66,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ patient, onClose, o
 
     if (!formData.telefono.trim()) {
       newErrors.telefono = 'El teléfono es requerido';
-    } else if (!/^\+504\s\d{4}-\d{4}$/.test(formData.telefono)) {
-      newErrors.telefono = 'El formato debe ser +504 XXXX-XXXX';
+    } else if (!/^\+505\s\d{4}-\d{4}$/.test(formData.telefono)) {
+      newErrors.telefono = 'El formato debe ser +505 XXXX-XXXX';
     }
 
     setErrors(newErrors);
@@ -136,20 +136,20 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ patient, onClose, o
     const numbers = value.replace(/\D/g, '');
     
     // Si empieza con 504, agregar el +
-    if (numbers.startsWith('504')) {
+    if (numbers.startsWith('505')) {
       const remaining = numbers.slice(3);
       if (remaining.length <= 4) {
-        return `+504 ${remaining}`;
+        return `+505 ${remaining}`;
       } else {
-        return `+504 ${remaining.slice(0, 4)}-${remaining.slice(4, 8)}`;
+        return `+505 ${remaining.slice(0, 4)}-${remaining.slice(4, 8)}`;
       }
     }
     
     // Si no empieza con 504, asumir que es número local
     if (numbers.length <= 4) {
-      return `+504 ${numbers}`;
+      return `+505 ${numbers}`;
     } else {
-      return `+504 ${numbers.slice(0, 4)}-${numbers.slice(4, 8)}`;
+      return `+505 ${numbers.slice(0, 4)}-${numbers.slice(4, 8)}`;
     }
   };
 
@@ -264,7 +264,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ patient, onClose, o
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
                 errors.identificacion ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
-              placeholder="0801-1990-12345"
+              placeholder="0001-190480-1234X"
               disabled={isSubmitting}
             />
             {errors.identificacion && (
@@ -285,7 +285,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ patient, onClose, o
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
                 errors.telefono ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
-              placeholder="+504 9876-5432"
+              placeholder="+505 9876-5432"
               disabled={isSubmitting}
             />
             {errors.telefono && (

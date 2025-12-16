@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, FileText, Calendar, Stethoscope } from 'lucide-react';
+import { FileText, Calendar, Stethoscope } from 'lucide-react';
 import ReporteCitas from './ReporteCitas';
 import ReporteProcedimientos from './ReporteProcedimientos';
 
-interface ReportesListProps {
-  onBack: () => void;
-}
-
-const ReportesList: React.FC<ReportesListProps> = ({ onBack }) => {
+const ReportesList: React.FC = () => {
   const [currentView, setCurrentView] = useState<'main' | 'citas' | 'procedimientos'>('main');
 
   const handleCitasClick = () => {
@@ -33,19 +29,10 @@ const ReportesList: React.FC<ReportesListProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-6 py-8">
-        {/* Header con botón de retroceso */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Regresar</span>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Módulo de Reportes</h1>
-            <p className="text-gray-600 mt-1">Genera reportes de citas y procedimientos médicos</p>
-          </div>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Módulo de Reportes</h1>
+          <p className="text-gray-600 mt-1">Genera reportes de citas y procedimientos médicos</p>
         </div>
 
         {/* Tarjetas de opciones */}

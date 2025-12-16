@@ -1,28 +1,26 @@
 import React from 'react';
-import { 
-  Home, 
-  Users, 
-  UserCheck, 
-  Calendar, 
-  Activity, 
-  FileText, 
-  DollarSign 
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Home,
+  Users,
+  UserCheck,
+  Calendar,
+  Activity,
+  FileText,
+  DollarSign
 } from 'lucide-react';
 
-interface SidebarProps {
-  currentView: string;
-  onViewChange: (view: string) => void;
-}
+const Sidebar: React.FC = () => {
+  const location = useLocation();
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
   const menuItems = [
-    { id: 'inicio', label: 'Inicio', icon: Home },
-    { id: 'patients', label: 'Pacientes', icon: Users },
-    { id: 'doctors', label: 'Doctores', icon: UserCheck },
-    { id: 'appointments', label: 'Citas', icon: Calendar },
-    { id: 'procedimientos', label: 'Caja', icon: Activity },
-    { id: 'reportes', label: 'Reportes', icon: FileText },
-    { id: 'aranceles', label: 'Aranceles', icon: DollarSign },
+    { path: '/', label: 'Inicio', icon: Home },
+    { path: '/pacientes', label: 'Pacientes', icon: Users },
+    { path: '/doctores', label: 'Doctores', icon: UserCheck },
+    { path: '/citas', label: 'Citas', icon: Calendar },
+    { path: '/procedimientos', label: 'Caja', icon: Activity },
+    { path: '/reportes', label: 'Reportes', icon: FileText },
+    { path: '/aranceles', label: 'Aranceles', icon: DollarSign },
   ];
 
   return (
@@ -31,9 +29,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
       <div className="p-6 border-b border-gray-700">
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 mb-4 flex items-center justify-center">
-            <img 
-              src="/Logo, providencia.png" 
-              alt="Centro de Especialidades Divina Providencia" 
+            <img
+              src="/Logo, providencia.png"
+              alt="Centro de Especialidades Divina Providencia"
               className="w-full h-full object-contain rounded-xl shadow-lg"
             />
           </div>
@@ -49,21 +47,21 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentView === item.id;
-            
+            const isActive = location.pathname === item.path;
+
             return (
-              <li key={item.id}>
-                <button
-                  onClick={() => onViewChange(item.id)}
+              <li key={item.path}>
+                <Link
+                  to={item.path}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-lg' 
+                      ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }`}
                 >
                   <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   <span className="font-medium">{item.label}</span>
-                </button>
+                </Link>
               </li>
             );
           })}

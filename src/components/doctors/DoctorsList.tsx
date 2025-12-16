@@ -1,13 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Doctor } from '../../types/doctor';
 import { apiService } from '../../services/api';
 
-interface DoctorsListProps {
-  onBack: () => void;
-}
-
-const DoctorsList: React.FC<DoctorsListProps> = ({ onBack }) => {
+const DoctorsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -84,20 +80,11 @@ const DoctorsList: React.FC<DoctorsListProps> = ({ onBack }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center mb-8">
-            <button
-              onClick={onBack}
-              className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Regresar</span>
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Gestión de Doctores</h1>
-              <p className="text-gray-600 mt-1">Consulta la información del personal médico</p>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Gestión de Doctores</h1>
+            <p className="text-gray-600 mt-1">Consulta la información del personal médico</p>
           </div>
-          
+
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <span className="ml-3" style={{ color: '#02457A' }}>Cargando doctores...</span>
@@ -110,19 +97,10 @@ const DoctorsList: React.FC<DoctorsListProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       <div className="container mx-auto px-6 py-8">
-        {/* Header con botón de retroceso */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Regresar</span>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Gestión de Doctores</h1>
-            <p className="text-gray-600 mt-1">Consulta la información del personal médico</p>
-          </div>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Gestión de Doctores</h1>
+          <p className="text-gray-600 mt-1">Consulta la información del personal médico</p>
         </div>
 
         {/* Buscador */}

@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, DollarSign, Stethoscope, Activity } from 'lucide-react';
+import { DollarSign, Stethoscope, Activity } from 'lucide-react';
 import ConsultasList from './ConsultasList';
 import ProcedimientosList from './ProcedimientosList';
 
-interface ArancelesListProps {
-  onBack: () => void;
-}
-
-const ArancelesList: React.FC<ArancelesListProps> = ({ onBack }) => {
+const ArancelesList: React.FC = () => {
   const [currentView, setCurrentView] = useState<'main' | 'consultas' | 'procedimientos'>('main');
 
   const handleConsultasClick = () => {
@@ -33,19 +29,10 @@ const ArancelesList: React.FC<ArancelesListProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
       <div className="container mx-auto px-6 py-8">
-        {/* Header con botón de retroceso */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Regresar</span>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Gestión de Aranceles</h1>
-            <p className="text-gray-600 mt-1">Administra los precios de consultas y procedimientos</p>
-          </div>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Gestión de Aranceles</h1>
+          <p className="text-gray-600 mt-1">Administra los precios de consultas y procedimientos</p>
         </div>
 
         {/* Tarjetas de opciones */}

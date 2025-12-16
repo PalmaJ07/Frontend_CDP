@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Search, Calendar, DollarSign, User, Activity, Plus, Trash2, Check, AlertCircle, Clock } from 'lucide-react';
+import { Search, Calendar, DollarSign, User, Activity, Plus, Trash2, Check, AlertCircle, Clock } from 'lucide-react';
 import type { Patient } from '../../types/patient';
 import { apiService } from '../../services/api';
-
-interface ProcedimientosListProps {
-  onBack: () => void;
-}
 
 interface Arancel {
   id: number;
@@ -40,7 +36,7 @@ interface PendingAppointment {
   deleted_user: number | null;
 }
 
-const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
+const ProcedimientosList: React.FC = () => {
   const [selectedPaciente, setSelectedPaciente] = useState<Patient | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -292,18 +288,9 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Regresar</span>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Caja</h1>
-            <p className="text-gray-600 mt-1">Registra múltiples exámenes de laboratorio para un paciente</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Caja</h1>
+          <p className="text-gray-600 mt-1">Registra múltiples exámenes de laboratorio para un paciente</p>
         </div>
 
         {/* Mensaje de éxito */}

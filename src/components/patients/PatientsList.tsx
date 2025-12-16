@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, Plus, CreditCard as Edit, Trash2, User, Activity } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Plus, CreditCard as Edit, Trash2, User, Activity } from 'lucide-react';
 import type { Patient } from '../../types/patient';
 import { apiService } from '../../services/api';
 import CreatePatientModal from './CreatePatientModal';
@@ -7,11 +7,7 @@ import EditPatientModal from './EditPatientModal';
 import PatientMedicalHistoryModal from './PatientMedicalHistoryModal';
 import DeletePatientModal from './DeletePatientModal';
 
-interface PatientsListProps {
-  onBack: () => void;
-}
-
-const PatientsList: React.FC<PatientsListProps> = ({ onBack }) => {
+const PatientsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -57,15 +53,6 @@ const PatientsList: React.FC<PatientsListProps> = ({ onBack }) => {
     loadPatients(currentPage, searchTerm);
   }, [currentPage]);
 
-  // Manejar búsqueda con debounce
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setCurrentPage(1);
-      loadPatients(1, searchTerm);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
 
   // Calcular páginas para la paginación
   const totalPages = Math.ceil(totalCount / itemsPerPage);
@@ -74,6 +61,18 @@ const PatientsList: React.FC<PatientsListProps> = ({ onBack }) => {
     setCurrentPage(page);
   };
 
+  // Manejar búsqueda al presionar Enter
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setCurrentPage(1);
+      loadPatients(1, searchTerm);
+    }
+  };
+
+  // Manejar cambio en el input de búsqueda
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
   const handleCreatePatient = (patientData: any) => {
     // Agregar el nuevo paciente al inicio de la lista
     setPatients(prev => [patientData, ...prev]);
@@ -175,20 +174,11 @@ const PatientsList: React.FC<PatientsListProps> = ({ onBack }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center mb-8">
-            <button
-              onClick={onBack}
-              className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Regresar</span>
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Gestión de Pacientes</h1>
-              <p className="text-gray-600 mt-1">Administra la información de los pacientes</p>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Gestión de Pacientes</h1>
+            <p className="text-gray-600 mt-1">Administra la información de los pacientes</p>
           </div>
-          
+
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-blue-600">Cargando pacientes...</span>
@@ -201,22 +191,13 @@ const PatientsList: React.FC<PatientsListProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-6 py-8">
-        {/* Header con botón de retroceso */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <button
-              onClick={onBack}
-              className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 mr-4"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Regresar</span>
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Gestión de Pacientes</h1>
-              <p className="text-gray-600 mt-1">Administra la información de los pacientes</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Gestión de Pacientes</h1>
+            <p className="text-gray-600 mt-1">Administra la información de los pacientes</p>
           </div>
-          
+
           {/* Botón Crear */}
           <button
             onClick={() => setShowCreateModal(true)}
@@ -237,17 +218,15 @@ const PatientsList: React.FC<PatientsListProps> = ({ onBack }) => {
               type="text"
               placeholder="Buscar por nombre, identificación o teléfono..."
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={handleSearchChange}
+              onKeyPress={handleSearchKeyPress}
               className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               disabled={loading}
             />
           </div>
-          {loading && (
-            <div className="mt-2 text-sm text-gray-500">Buscando...</div>
-          )}
+          <div className="mt-2 text-sm text-gray-500">
+            Presiona Enter para buscar
+          </div>
         </div>
 
         {/* Error Message */}
