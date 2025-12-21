@@ -279,7 +279,7 @@ const ProcedimientosList: React.FC = () => {
   };
 
   const formatPrice = (price: number) => {
-    return `C$ ${price.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$ ${price.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const selectedArancel = getArancelById(parseInt(selectedProcedimiento));

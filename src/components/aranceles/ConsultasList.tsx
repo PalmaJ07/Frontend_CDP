@@ -65,7 +65,7 @@ const ConsultasList: React.FC<ConsultasListProps> = ({ onBack }) => {
 
   const formatPrice = (price: string) => {
     const numericPrice = parseFloat(price);
-    return `C$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   if (loading && consultas.length === 0) {
@@ -209,7 +209,7 @@ const ConsultasList: React.FC<ConsultasListProps> = ({ onBack }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <DollarSign className="w-4 h-4 text-green-600 mr-2" />
+                        {/* <DollarSign className="w-4 h-4 text-green-600 mr-2" /> */}
                         <div className="text-sm font-semibold text-green-700">{formatPrice(consulta.precio)}</div>
                       </div>
                     </td>
@@ -233,7 +233,7 @@ const ConsultasList: React.FC<ConsultasListProps> = ({ onBack }) => {
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <DollarSign className="w-5 h-5 text-green-600 mr-2" />
+                    {/* <DollarSign className="w-5 h-5 text-green-600 mr-2" /> */}
                     <span className="text-lg font-semibold text-green-700">{formatPrice(consulta.precio)}</span>
                   </div>
                 </div>
