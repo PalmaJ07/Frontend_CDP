@@ -9,19 +9,25 @@ import {
   FileText,
   DollarSign
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
-  const menuItems = [
-    { path: '/', label: 'Inicio', icon: Home },
-    { path: '/pacientes', label: 'Pacientes', icon: Users },
-    { path: '/doctores', label: 'Doctores', icon: UserCheck },
-    { path: '/citas', label: 'Citas', icon: Calendar },
-    { path: '/procedimientos', label: 'Caja', icon: Activity },
-    { path: '/reportes', label: 'Reportes', icon: FileText },
-    { path: '/aranceles', label: 'Aranceles', icon: DollarSign },
+  const allMenuItems = [
+    { path: '/', label: 'Inicio', icon: Home, allowedFor: ['Administrador', 'Operador'] },
+    { path: '/pacientes', label: 'Pacientes', icon: Users, allowedFor: ['Administrador', 'Operador'] },
+    { path: '/doctores', label: 'Doctores', icon: UserCheck, allowedFor: ['Administrador', 'Operador'] },
+    { path: '/citas', label: 'Citas', icon: Calendar, allowedFor: ['Administrador', 'Operador'] },
+    { path: '/procedimientos', label: 'Caja', icon: Activity, allowedFor: ['Administrador', 'Operador'] },
+    { path: '/reportes', label: 'Reportes', icon: FileText, allowedFor: ['Administrador'] },
+    { path: '/aranceles', label: 'Aranceles', icon: DollarSign, allowedFor: ['Administrador', 'Operador'] },
   ];
+
+  const menuItems = allMenuItems.filter(item =>
+    item.allowedFor.includes(user?.tipo_usuario || '')
+  );
 
   return (
     <div className="w-64 bg-gray-800 shadow-lg border-r border-gray-700 h-full flex flex-col">
