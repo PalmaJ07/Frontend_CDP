@@ -32,7 +32,7 @@ const ReportesList: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Módulo de Reportes</h1>
-          <p className="text-gray-600 mt-1">Genera reportes de citas y procedimientos médicos</p>
+          <p className="text-gray-600 mt-1">Genera reportes de citas y facturas médicas</p>
         </div>
 
         {/* Tarjetas de opciones */}
@@ -57,7 +57,7 @@ const ReportesList: React.FC = () => {
             </div>
           </div>
 
-          {/* Reporte de Procedimientos */}
+          {/* Reportes de Facturas */}
           <div
             onClick={handleProcedimientosClick}
             className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 cursor-pointer transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border border-green-200 border-opacity-20 group"
@@ -66,9 +66,9 @@ const ReportesList: React.FC = () => {
               <div className="bg-white/20 rounded-xl p-4 mb-4 group-hover:bg-white/30 transition-all duration-300">
                 <Stethoscope className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Reporte de Procedimientos</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Reportes de Facturas</h3>
               <p className="text-white/90 text-sm leading-relaxed mb-4">
-                Analiza los procedimientos realizados y sus ingresos por fecha
+                Analiza las facturas realizadas y sus ingresos por fecha
               </p>
               
               <div className="px-4 py-1.5 bg-white/20 rounded-full text-white/90 text-xs font-medium group-hover:bg-white/30 transition-all duration-300">
@@ -86,7 +86,7 @@ const ReportesList: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-800">Sistema de Reportes</h3>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Genera reportes detallados de citas médicas y procedimientos realizados. 
+              Genera reportes detallados de citas médicas y facturas realizadas.
               Filtra por fechas y obtén información financiera precisa para la gestión del centro médico.
             </p>
           </div>

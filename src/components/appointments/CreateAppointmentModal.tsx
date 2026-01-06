@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, User, Stethoscope, UserCheck, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Calendar, Clock, User, Stethoscope, UserCheck, Search, ChevronDown } from 'lucide-react';
 import { apiService } from '../../services/api';
 import type { Patient } from '../../types/patient';
 
@@ -50,6 +50,13 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
     submitting: false
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showArancelDropdown, setShowArancelDropdown] = useState(false);
+  const [showDoctorDropdown, setShowDoctorDropdown] = useState(false);
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+
+  const arancelDropdownRef = useRef<HTMLDivElement>(null);
+  const doctorDropdownRef = useRef<HTMLDivElement>(null);
+  const timeDropdownRef = useRef<HTMLDivElement>(null);
 
   // Cargar aranceles y doctores al montar el componente
   useEffect(() => {
@@ -66,6 +73,24 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
       return () => clearTimeout(timeoutId);
     }
   }, [searchTerm, showPatientList]);
+
+  // Cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (arancelDropdownRef.current && !arancelDropdownRef.current.contains(event.target as Node)) {
+        setShowArancelDropdown(false);
+      }
+      if (doctorDropdownRef.current && !doctorDropdownRef.current.contains(event.target as Node)) {
+        setShowDoctorDropdown(false);
+      }
+      if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target as Node)) {
+        setShowTimeDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadAranceles = async () => {
     try {
@@ -124,11 +149,12 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
     if (!formData.fechaCita) {
       newErrors.fechaCita = 'La fecha de la cita es requerida';
     } else {
-      const selectedDate = new Date(formData.fechaCita);
+      const selectedDate = formData.fechaCita;
+      // Obtener la fecha de hoy en formato local (no UTC)
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (selectedDate < today) {
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      if (selectedDate < todayStr) {
         newErrors.fechaCita = 'La fecha no puede ser anterior a hoy';
       }
     }
@@ -237,22 +263,22 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
 
   const generateTimeOptions = () => {
     const times = [];
-    // Generar horas de 7:00 AM a 6:00 PM en intervalos de 30 minutos
+    // Generar horas de 7:00 AM a 10:00 PM en intervalos de 30 minutos
     const startHour = 7;
-    const endHour = 18;
-    
+    const endHour = 22;
+
     for (let hour = startHour; hour <= endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         let displayHour = hour;
         let period = 'AM';
-        
+
         if (hour >= 12) {
           period = 'PM';
           if (hour > 12) {
             displayHour = hour - 12;
           }
         }
-        
+
         const timeStr = `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         times.push({ value: timeStr, label: `${timeStr} ${period}`, period });
       }
@@ -381,56 +407,101 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
           </div>
 
           {/* Servicio/Arancel */}
-          <div>
+          <div className="relative" ref={arancelDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Stethoscope className="w-4 h-4 inline mr-2" />
               Servicio
             </label>
-            <select
-              value={formData.arancel?.id || ''}
-              onChange={(e) => handleArancelChange(e.target.value)}
+            <button
+              type="button"
+              onClick={() => !loading.aranceles && !loading.submitting && setShowArancelDropdown(!showArancelDropdown)}
               disabled={loading.aranceles || loading.submitting}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 ${
-                errors.arancel ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 flex items-center justify-between text-left ${
+                errors.arancel ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+              } ${loading.aranceles || loading.submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <option value="">
-                {loading.aranceles ? 'Cargando servicios...' : 'Selecciona un servicio'}
-              </option>
-              {aranceles.map((arancel) => (
-                <option key={arancel.id} value={arancel.id}>
-                  {arancel.descripcion} - C$ {parseFloat(arancel.precio).toFixed(2)}
-                </option>
-              ))}
-            </select>
+              <span className={formData.arancel ? 'text-gray-900' : 'text-gray-500'}>
+                {loading.aranceles
+                  ? 'Cargando servicios...'
+                  : formData.arancel
+                    ? `${formData.arancel.descripcion} - C$ ${parseFloat(formData.arancel.precio).toFixed(2)}`
+                    : 'Selecciona un servicio'}
+              </span>
+              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showArancelDropdown ? 'transform rotate-180' : ''}`} />
+            </button>
+
+            {showArancelDropdown && (
+              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
+                {aranceles.map((arancel) => (
+                  <button
+                    key={arancel.id}
+                    type="button"
+                    onClick={() => {
+                      handleArancelChange(arancel.id.toString());
+                      setShowArancelDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-all duration-200 ${
+                      formData.arancel?.id === arancel.id ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-900'
+                    }`}
+                  >
+                    {arancel.descripcion} - C$ {parseFloat(arancel.precio).toFixed(2)}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {errors.arancel && (
               <p className="mt-1 text-sm text-red-600">{errors.arancel}</p>
             )}
           </div>
 
           {/* Doctor */}
-          <div>
+          <div className="relative" ref={doctorDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <UserCheck className="w-4 h-4 inline mr-2" />
               Doctor
             </label>
-            <select
-              value={formData.doctor?.id || ''}
-              onChange={(e) => handleDoctorChange(e.target.value)}
+            <button
+              type="button"
+              onClick={() => !loading.doctors && !loading.submitting && setShowDoctorDropdown(!showDoctorDropdown)}
               disabled={loading.doctors || loading.submitting}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 ${
-                errors.doctor ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 flex items-center justify-between text-left ${
+                errors.doctor ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+              } ${loading.doctors || loading.submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <option value="">
-                {loading.doctors ? 'Cargando doctores...' : 'Selecciona un doctor'}
-              </option>
-              {doctors.map((doctor) => (
-                <option key={doctor.id} value={doctor.id}>
-                  {doctor.nombre} - {doctor.especialidades.map(e => e.descripcion).join(', ')}
-                </option>
-              ))}
-            </select>
+              <span className={formData.doctor ? 'text-gray-900' : 'text-gray-500'}>
+                {loading.doctors
+                  ? 'Cargando doctores...'
+                  : formData.doctor
+                    ? `${formData.doctor.nombre} - ${formData.doctor.especialidades.map(e => e.descripcion).join(', ')}`
+                    : 'Selecciona un doctor'}
+              </span>
+              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showDoctorDropdown ? 'transform rotate-180' : ''}`} />
+            </button>
+
+            {showDoctorDropdown && (
+              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
+                {doctors.map((doctor) => (
+                  <button
+                    key={doctor.id}
+                    type="button"
+                    onClick={() => {
+                      handleDoctorChange(doctor.id.toString());
+                      setShowDoctorDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-all duration-200 ${
+                      formData.doctor?.id === doctor.id ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-900'
+                    }`}
+                  >
+                    <div>
+                      <p className="font-medium">{doctor.nombre}</p>
+                      <p className="text-sm text-gray-600">{doctor.especialidades.map(e => e.descripcion).join(', ')}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {errors.doctor && (
               <p className="mt-1 text-sm text-red-600">{errors.doctor}</p>
             )}
@@ -451,7 +522,6 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
                   setErrors(prev => ({ ...prev, fechaCita: '' }));
                 }
               }}
-              min={new Date().toISOString().split('T')[0]}
               disabled={loading.submitting}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 ${
                 errors.fechaCita ? 'border-red-300 bg-red-50' : 'border-gray-300'
@@ -463,30 +533,49 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({ onClose
           </div>
 
           {/* Hora de la Cita */}
-          <div>
+          <div className="relative" ref={timeDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Clock className="w-4 h-4 inline mr-2" />
               Hora de la Cita
             </label>
-            <select
-              value={`${formData.horaCita}-${formData.periodo}`}
-              onChange={(e) => {
-                const [time, period] = e.target.value.split('-');
-                handleTimeChange('horaCita', time);
-                handleTimeChange('periodo', period as 'AM' | 'PM');
-              }}
+            <button
+              type="button"
+              onClick={() => !loading.submitting && setShowTimeDropdown(!showTimeDropdown)}
               disabled={loading.submitting}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 ${
-                errors.horaCita ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 flex items-center justify-between text-left ${
+                errors.horaCita ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+              } ${loading.submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <option value="">Selecciona una hora</option>
-              {generateTimeOptions().map((time) => (
-                <option key={`${time.value}-${time.period}`} value={`${time.value}-${time.period}`}>
-                  {time.label}
-                </option>
-              ))}
-            </select>
+              <span className={formData.horaCita ? 'text-gray-900' : 'text-gray-500'}>
+                {formData.horaCita ? `${formData.horaCita} ${formData.periodo}` : 'Selecciona una hora'}
+              </span>
+              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showTimeDropdown ? 'transform rotate-180' : ''}`} />
+            </button>
+
+            {showTimeDropdown && (
+              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
+                {generateTimeOptions().map((time) => (
+                  <button
+                    key={`${time.value}-${time.period}`}
+                    type="button"
+                    onClick={() => {
+                      const [hour, minute] = time.value.split(':');
+                      handleTimeChange('horaCita', time.value);
+                      handleTimeChange('periodo', time.period as 'AM' | 'PM');
+                      setShowTimeDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-all duration-200 ${
+                      formData.horaCita === time.value && formData.periodo === time.period
+                        ? 'bg-purple-50 text-purple-700 font-medium'
+                        : 'text-gray-900'
+                    }`}
+                  >
+                    {time.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {errors.horaCita && (
               <p className="mt-1 text-sm text-red-600">{errors.horaCita}</p>
             )}

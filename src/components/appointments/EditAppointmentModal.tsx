@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Calendar, Clock, User, ChevronDown } from 'lucide-react';
 import type { Appointment } from '../../types/appointment';
 import { apiService } from '../../services/api';
 
@@ -18,6 +18,9 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({ appointment
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+
+  const timeDropdownRef = useRef<HTMLDivElement>(null);
 
   // Estados disponibles
   const estados = ['Pendiente', 'Completada', 'Cancelada'];
@@ -45,6 +48,18 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({ appointment
       });
     }
   }, [appointment]);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target as Node)) {
+        setShowTimeDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -135,22 +150,22 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({ appointment
   // Generar opciones de tiempo (igual que en CreateAppointmentModal)
   const generateTimeOptions = () => {
     const times = [];
-    // Generar horas de 7:00 AM a 6:00 PM en intervalos de 30 minutos
+    // Generar horas de 7:00 AM a 10:00 PM en intervalos de 30 minutos
     const startHour = 7;
-    const endHour = 18;
-    
+    const endHour = 22;
+
     for (let hour = startHour; hour <= endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         let displayHour = hour;
         let period = 'AM';
-        
+
         if (hour >= 12) {
           period = 'PM';
           if (hour > 12) {
             displayHour = hour - 12;
           }
         }
-        
+
         const timeStr = `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${period}`;
         times.push(timeStr);
       }
@@ -231,26 +246,47 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({ appointment
           </div>
 
           {/* Hora de la Cita */}
-          <div>
+          <div className="relative" ref={timeDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Clock className="w-4 h-4 inline mr-2" />
               Hora de la Cita
             </label>
-            <select
-              value={formData.horaCita}
-              onChange={(e) => handleInputChange('horaCita', e.target.value)}
+            <button
+              type="button"
+              onClick={() => !isSubmitting && setShowTimeDropdown(!showTimeDropdown)}
               disabled={isSubmitting}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                errors.horaCita ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 flex items-center justify-between text-left ${
+                errors.horaCita ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+              } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <option value="">Selecciona una hora</option>
-              {generateTimeOptions().map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </select>
+              <span className={formData.horaCita ? 'text-gray-900' : 'text-gray-500'}>
+                {formData.horaCita || 'Selecciona una hora'}
+              </span>
+              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showTimeDropdown ? 'transform rotate-180' : ''}`} />
+            </button>
+
+            {showTimeDropdown && (
+              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
+                {generateTimeOptions().map((time) => (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => {
+                      handleInputChange('horaCita', time);
+                      setShowTimeDropdown(false);
+                    }}
+                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-all duration-200 ${
+                      formData.horaCita === time
+                        ? 'bg-blue-50 text-blue-700 font-medium'
+                        : 'text-gray-900'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {errors.horaCita && (
               <p className="mt-1 text-sm text-red-600">{errors.horaCita}</p>
             )}

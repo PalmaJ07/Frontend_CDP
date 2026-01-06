@@ -138,7 +138,7 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
 
   const formatPrice = (price: string | number) => {
     const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return `$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `C$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const totalPages = Math.ceil(totalCount / 10); // Asumiendo 10 items por página
@@ -156,7 +156,7 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
             <span>Regresar</span>
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Reporte de Procedimientos</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Reportes de Facturas</h1>
             <p className="text-gray-600 mt-1">Analiza las facturas de procedimientos realizados</p>
           </div>
         </div>
@@ -377,7 +377,7 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                {/* <DollarSign className="w-4 h-4 text-green-600 mr-2" /> */}
+                                <DollarSign className="w-4 h-4 text-green-600 mr-2" />
                                 <div className="text-sm font-semibold text-green-700">{formatPrice(factura.total)}</div>
                               </div>
                             </td>
