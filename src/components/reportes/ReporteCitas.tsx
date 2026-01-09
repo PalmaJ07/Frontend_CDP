@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Calendar, Search, DollarSign, User, UserCheck, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Search, DollarSign, User, UserCheck, FileText, ChevronLeft, ChevronRight, Download, FileSpreadsheet } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 interface ReporteCitasProps {
@@ -150,6 +150,82 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
     loadCitas(page);
   };
 
+  // Función para construir los parámetros de filtro
+  const buildFilterParams = () => {
+    const params = new URLSearchParams();
+
+    // Filtros de estado (mismos que en loadCitas)
+    params.append('estado', 'Completada');
+    params.append('estado_pago', 'true');
+
+    if (fechaInicio) {
+      if (fechaFin) {
+        params.append('fecha_inicio', fechaInicio);
+        params.append('fecha_fin', fechaFin);
+      } else {
+        params.append('fecha', fechaInicio);
+      }
+    } else if (fechaFin) {
+      params.append('fecha_fin', fechaFin);
+    }
+
+    if (doctorSeleccionado) {
+      params.append('doctor_especialidad', doctorSeleccionado);
+    }
+
+    return params.toString();
+  };
+
+  // Función para descargar archivo
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers: HeadersInit = {};
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar el archivo');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setError('Error al descargar el archivo. Por favor, intenta de nuevo.');
+    }
+  };
+
+  // Función para descargar PDF
+  const handleDownloadPDF = async () => {
+    const params = buildFilterParams();
+    const url = `http://127.0.0.1:8000/api/citas/reporte/pdf/${params ? '?' + params : ''}`;
+    const filename = `reporte_citas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.pdf`;
+    await downloadFile(url, filename);
+  };
+
+  // Función para descargar Excel
+  const handleDownloadExcel = async () => {
+    const params = buildFilterParams();
+    const url = `http://127.0.0.1:8000/api/citas/reporte/excel/${params ? '?' + params : ''}`;
+    const filename = `reporte_citas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.xlsx`;
+    await downloadFile(url, filename);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-HN', {
@@ -209,11 +285,34 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            <Search className="w-5 h-5 inline mr-2" />
-            Filtros de Búsqueda
-          </h3>
-          
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              <Search className="w-5 h-5 inline mr-2" />
+              Filtros de Búsqueda
+            </h3>
+
+            {/* Botones de Exportación */}
+            <div className="flex space-x-3">
+              <button
+                onClick={handleDownloadPDF}
+                disabled={!mostrarReporte || citas.length === 0}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <Download className="w-4 h-4" />
+                <span>PDF</span>
+              </button>
+
+              <button
+                onClick={handleDownloadExcel}
+                disabled={!mostrarReporte || citas.length === 0}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Excel</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Calendar, Search, DollarSign, Activity, User, FileText, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Search, DollarSign, Activity, User, FileText, ChevronLeft, ChevronRight, Eye, X, Download, FileSpreadsheet } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 interface ReporteProcedimientosProps {
@@ -125,6 +125,74 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
     setSelectedFactura(null);
   };
 
+  // Función para construir los parámetros de filtro
+  const buildFilterParams = () => {
+    const params = new URLSearchParams();
+
+    if (fechaInicio) {
+      if (fechaFin) {
+        params.append('fecha_inicio', fechaInicio);
+        params.append('fecha_fin', fechaFin);
+      } else {
+        params.append('fecha', fechaInicio);
+      }
+    } else if (fechaFin) {
+      params.append('fecha_fin', fechaFin);
+    }
+
+    return params.toString();
+  };
+
+  // Función para descargar archivo
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers: HeadersInit = {};
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar el archivo');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setError('Error al descargar el archivo. Por favor, intenta de nuevo.');
+    }
+  };
+
+  // Función para descargar PDF
+  const handleDownloadPDF = async () => {
+    const params = buildFilterParams();
+    const url = `http://127.0.0.1:8000/api/procedimientos/facturas/pdf/${params ? '?' + params : ''}`;
+    const filename = `reporte_facturas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.pdf`;
+    await downloadFile(url, filename);
+  };
+
+  // Función para descargar Excel
+  const handleDownloadExcel = async () => {
+    const params = buildFilterParams();
+    const url = `http://127.0.0.1:8000/api/procedimientos/facturas/excel/${params ? '?' + params : ''}`;
+    const filename = `reporte_facturas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.xlsx`;
+    await downloadFile(url, filename);
+  };
+
   const formatDate = (dateString: string) => {
     // Crear fecha directamente desde el string sin conversión de zona horaria
     const [year, month, day] = dateString.split('-');
@@ -163,11 +231,34 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            <Search className="w-5 h-5 inline mr-2" />
-            Filtros de Búsqueda
-          </h3>
-          
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              <Search className="w-5 h-5 inline mr-2" />
+              Filtros de Búsqueda
+            </h3>
+
+            {/* Botones de Exportación */}
+            <div className="flex space-x-3">
+              <button
+                onClick={handleDownloadPDF}
+                disabled={!mostrarReporte || facturas.length === 0}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <Download className="w-4 h-4" />
+                <span>PDF</span>
+              </button>
+
+              <button
+                onClick={handleDownloadExcel}
+                disabled={!mostrarReporte || facturas.length === 0}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Excel</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
