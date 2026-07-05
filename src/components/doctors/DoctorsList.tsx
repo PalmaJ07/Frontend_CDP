@@ -10,6 +10,7 @@ const DoctorsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPagesFromApi, setTotalPagesFromApi] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
 
@@ -20,14 +21,15 @@ const DoctorsList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await apiService.getDoctors(page, search);
-      
+
       setDoctors(response.results || []);
       setTotalCount(response.count || 0);
+      setTotalPagesFromApi(response.total_pages || 0);
       setHasNext(!!response.next);
       setHasPrevious(!!response.previous);
-      
+
     } catch (error) {
       console.error('Error loading doctors:', error);
       setError('Error al cargar los doctores. Por favor, intenta de nuevo.');
@@ -73,8 +75,8 @@ const DoctorsList: React.FC = () => {
     return estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
-  // Calcular páginas para la paginación
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  // Calcular páginas para la paginación (usando el valor de la API si está disponible)
+  const totalPages = totalPagesFromApi || Math.ceil(totalCount / itemsPerPage);
 
   if (loading && doctors.length === 0) {
     return (
@@ -139,9 +141,9 @@ const DoctorsList: React.FC = () => {
         {/* Paginación superior */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
           <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Mostrando {doctors.length} de {totalCount} doctores
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-700 font-medium">
+                Total: {totalCount} doctores
                 {searchTerm && ` (filtrado por "${searchTerm}")`}
               </div>
               <div className="flex items-center space-x-2">
@@ -152,11 +154,11 @@ const DoctorsList: React.FC = () => {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                
+
                 <span className="px-3 py-2 text-sm font-medium text-gray-700">
                   Página {currentPage} de {totalPages}
                 </span>
-                
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={!hasNext || loading}

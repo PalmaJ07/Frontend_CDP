@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, Plus, CreditCard as Edit, Trash2, Calendar, Clock, User, Stethoscope, DollarSign, UserCheck } from 'lucide-react';
-import type  { Appointment } from '../../types/appointment';
+import type { Appointment } from '../../types/appointment';
 import { apiService } from '../../services/api';
 import CreateAppointmentModal from './CreateAppointmentModal';
 import EditAppointmentModal from './EditAppointmentModal';
@@ -19,6 +19,7 @@ const AppointmentsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPagesFromApi, setTotalPagesFromApi] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
 
@@ -29,14 +30,15 @@ const AppointmentsList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await apiService.getAppointments(page, search);
-      
+
       setAppointments(response.results || []);
       setTotalCount(response.count || 0);
+      setTotalPagesFromApi(response.total_pages || 0);
       setHasNext(!!response.next);
       setHasPrevious(!!response.previous);
-      
+
     } catch (error) {
       console.error('Error loading appointments:', error);
       setError('Error al cargar las citas. Por favor, intenta de nuevo.');
@@ -61,8 +63,8 @@ const AppointmentsList: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
 
-  // Calcular paginación
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  // Calcular paginación (usando el valor de la API si está disponible)
+  const totalPages = totalPagesFromApi || Math.ceil(totalCount / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -262,9 +264,9 @@ const AppointmentsList: React.FC = () => {
         {/* Paginación Superior */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
           <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Mostrando {appointments.length} de {totalCount} citas
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-700 font-medium">
+                Total: {totalCount} citas
                 {searchTerm && ` (filtrado por "${searchTerm}")`}
               </div>
               <div className="flex items-center space-x-2">
@@ -275,11 +277,11 @@ const AppointmentsList: React.FC = () => {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                
+
                 <span className="px-3 py-2 text-sm font-medium text-gray-700">
                   Página {currentPage} de {totalPages}
                 </span>
-                
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={!hasNext || loading}

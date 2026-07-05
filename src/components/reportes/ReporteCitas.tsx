@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Calendar, Search, DollarSign, User, UserCheck, FileText, ChevronLeft, ChevronRight, Download, FileSpreadsheet } from 'lucide-react';
 import { apiService } from '../../services/api';
 
@@ -53,6 +53,7 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
   const [citas, setCitas] = useState<CitaReporte[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPagesFromApi, setTotalPagesFromApi] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   
@@ -85,9 +86,9 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
     try {
       setLoading(prev => ({ ...prev, citas: true }));
       setError(null);
-      
+
       const filters: any = {};
-      
+
       if (fechaInicio) {
         if (fechaFin) {
           // Para rango de fechas usar fecha_inicio y fecha_fin
@@ -101,18 +102,19 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
         // Si solo hay fecha fin, usar fecha_fin
         filters.fecha_fin = fechaFin;
       }
-      
+
       if (doctorSeleccionado) {
         filters.doctor_especialidad = parseInt(doctorSeleccionado);
       }
 
       const response = await apiService.getCompletedAppointments(page, filters);
-      
+
       setCitas(response.results || []);
       setTotalCount(response.count || 0);
+      setTotalPagesFromApi(response.total_pages || 0);
       setHasNext(!!response.next);
       setHasPrevious(!!response.previous);
-      
+
     } catch (error) {
       console.error('Error loading citas:', error);
       setError('Error al cargar las citas. Por favor, intenta de nuevo.');
@@ -263,7 +265,8 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
     return doctor ? doctor.nombre : 'Doctor no encontrado';
   };
 
-  const totalPages = Math.ceil(totalCount / 10); // Asumiendo 10 items por página
+  // Calcular paginación (usando el valor de la API si está disponible)
+  const totalPages = totalPagesFromApi || Math.ceil(totalCount / 10);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
@@ -467,9 +470,9 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
         {mostrarReporte && !loading.citas && citas.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
             <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Mostrando {citas.length} de {totalCount} citas completadas
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-700 font-medium">
+                  Total: {totalCount} citas completadas
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -479,11 +482,11 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  
+
                   <span className="px-3 py-2 text-sm font-medium text-gray-700">
                     Página {currentPage} de {totalPages}
                   </span>
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={!hasNext}

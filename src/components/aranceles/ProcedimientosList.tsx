@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Search, ChevronLeft, ChevronRight, Activity, DollarSign } from 'lucide-react';
 import type { Arancel } from '../../types/arancel';
 import { apiService } from '../../services/api';
@@ -14,6 +14,7 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPagesFromApi, setTotalPagesFromApi] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
 
@@ -24,14 +25,15 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await apiService.getAranceles('p', page, search);
-      
+
       setProcedimientos(response.results || []);
       setTotalCount(response.count || 0);
+      setTotalPagesFromApi(response.total_pages || 0);
       setHasNext(!!response.next);
       setHasPrevious(!!response.previous);
-      
+
     } catch (error) {
       console.error('Error loading procedimientos:', error);
       setError('Error al cargar los procedimientos. Por favor, intenta de nuevo.');
@@ -56,8 +58,8 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
 
-  // Calcular paginación
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  // Calcular paginación (usando el valor de la API si está disponible)
+  const totalPages = totalPagesFromApi || Math.ceil(totalCount / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -65,7 +67,7 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
 
   const formatPrice = (price: string) => {
     const numericPrice = parseFloat(price);
-    return `$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `C$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   if (loading && procedimientos.length === 0) {
@@ -149,9 +151,9 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
         {/* Paginación Superior */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
           <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Mostrando {procedimientos.length} de {totalCount} procedimientos
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-700 font-medium">
+                Total: {totalCount} procedimientos
                 {searchTerm && ` (filtrado por "${searchTerm}")`}
               </div>
               <div className="flex items-center space-x-2">
@@ -162,11 +164,11 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                
+
                 <span className="px-3 py-2 text-sm font-medium text-gray-700">
                   Página {currentPage} de {totalPages}
                 </span>
-                
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={!hasNext || loading}
@@ -209,7 +211,7 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {/* <DollarSign className="w-4 h-4 text-green-600 mr-2" /> */}
+                        <DollarSign className="w-4 h-4 text-green-600 mr-2" />
                         <div className="text-sm font-semibold text-green-700">{formatPrice(procedimiento.precio)}</div>
                       </div>
                     </td>
@@ -233,7 +235,7 @@ const ProcedimientosList: React.FC<ProcedimientosListProps> = ({ onBack }) => {
                     </div>
                   </div>
                   <div className="flex items-center">
-                    {/* <DollarSign className="w-5 h-5 text-green-600 mr-2" /> */}
+                    <DollarSign className="w-5 h-5 text-green-600 mr-2" />
                     <span className="text-lg font-semibold text-green-700">{formatPrice(procedimiento.precio)}</span>
                   </div>
                 </div>

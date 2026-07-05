@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Calendar, Search, DollarSign, Activity, User, FileText, ChevronLeft, ChevronRight, Eye, X, Download, FileSpreadsheet } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, Calendar, Search, DollarSign, Activity, FileText, ChevronLeft, ChevronRight, Eye, X, Download, FileSpreadsheet } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 interface ReporteProcedimientosProps {
@@ -44,6 +44,8 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
   // Estados para datos
   const [facturas, setFacturas] = useState<Factura[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPagesFromApi, setTotalPagesFromApi] = useState(0);
+  const [totalGeneral, setTotalGeneral] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   
@@ -55,9 +57,9 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
     try {
       setLoading(true);
       setError(null);
-      
+
       const filters: any = {};
-      
+
       if (fechaInicio) {
         if (fechaFin) {
           // Para rango de fechas usar fecha_inicio y fecha_fin
@@ -73,12 +75,14 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
       }
 
       const response = await apiService.getFacturas(page, filters);
-      
+
       setFacturas(response.results || []);
       setTotalCount(response.count || 0);
+      setTotalPagesFromApi(response.total_pages || 0);
+      setTotalGeneral(response.total_general || 0);
       setHasNext(!!response.next);
       setHasPrevious(!!response.previous);
-      
+
     } catch (error) {
       console.error('Error loading facturas:', error);
       setError('Error al cargar las facturas. Por favor, intenta de nuevo.');
@@ -90,17 +94,13 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
 
   // Calcular resumen del reporte
   const resumen: ReporteResumen = useMemo(() => {
-    const totalIngresos = facturas.reduce((total, factura) => {
-      return total + parseFloat(factura.total);
-    }, 0);
-
     return {
       totalRegistros: totalCount,
-      totalIngresos,
+      totalIngresos: totalGeneral,
       fechaInicio: fechaInicio || 'No especificada',
       fechaFin: fechaFin || 'No especificada'
     };
-  }, [facturas, totalCount, fechaInicio, fechaFin]);
+  }, [totalCount, totalGeneral, fechaInicio, fechaFin]);
 
   const handleGenerarReporte = () => {
     setCurrentPage(1);
@@ -209,7 +209,8 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
     return `C$ ${numericPrice.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const totalPages = Math.ceil(totalCount / 10); // Asumiendo 10 items por página
+  // Calcular paginación (usando el valor de la API si está disponible)
+  const totalPages = totalPagesFromApi || Math.ceil(totalCount / 10);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
@@ -237,7 +238,7 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
               Filtros de Búsqueda
             </h3>
 
-            {/* Botones de Exportación */}
+            {/* Botones de Expoartación */}
             <div className="flex space-x-3">
               <button
                 onClick={handleDownloadPDF}
@@ -377,9 +378,9 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
         {mostrarReporte && !loading && facturas.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
             <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Mostrando {facturas.length} de {totalCount} facturas
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-700 font-medium">
+                  Total: {totalCount} facturas
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -389,11 +390,11 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  
+
                   <span className="px-3 py-2 text-sm font-medium text-gray-700">
                     Página {currentPage} de {totalPages}
                   </span>
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={!hasNext}
