@@ -204,11 +204,11 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
       setError('Error al descargar el archivo. Por favor, intenta de nuevo.');
     }
   };
-
+  const API_URL = import.meta.env.VITE_API_URL
   // Función para descargar PDF
   const handleDownloadPDF = async () => {
     const params = buildFilterParams();
-    const url = `http://127.0.0.1:8000/api/citas/reporte/pdf/${params ? '?' + params : ''}`;
+    const url = `${API_URL}/citas/reporte/pdf/${params ? '?' + params : ''}`;
     const filename = `reporte_citas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.pdf`;
     await downloadFile(url, filename);
   };
@@ -216,7 +216,7 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
   // Función para descargar Excel
   const handleDownloadExcel = async () => {
     const params = buildFilterParams();
-    const url = `http://127.0.0.1:8000/api/citas/reporte/excel/${params ? '?' + params : ''}`;
+    const url = `${API_URL}/citas/reporte/excel/${params ? '?' + params : ''}`;
     const filename = `reporte_citas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.xlsx`;
     await downloadFile(url, filename);
   };

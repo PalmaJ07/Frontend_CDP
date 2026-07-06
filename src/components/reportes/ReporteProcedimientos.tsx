@@ -177,10 +177,11 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
     }
   };
 
+  const API_URL = import.meta.env.VITE_API_URL
   // Función para descargar PDF
   const handleDownloadPDF = async () => {
     const params = buildFilterParams();
-    const url = `http://127.0.0.1:8000/api/procedimientos/facturas/pdf/${params ? '?' + params : ''}`;
+    const url = `${API_URL}/procedimientos/facturas/pdf/${params ? '?' + params : ''}`;
     const filename = `reporte_facturas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.pdf`;
     await downloadFile(url, filename);
   };
@@ -188,7 +189,7 @@ const ReporteProcedimientos: React.FC<ReporteProcedimientosProps> = ({ onBack })
   // Función para descargar Excel
   const handleDownloadExcel = async () => {
     const params = buildFilterParams();
-    const url = `http://127.0.0.1:8000/api/procedimientos/facturas/excel/${params ? '?' + params : ''}`;
+    const url = `${API_URL}/procedimientos/facturas/excel/${params ? '?' + params : ''}`;
     const filename = `reporte_facturas_${fechaInicio || 'todas'}_${fechaFin || 'todas'}.xlsx`;
     await downloadFile(url, filename);
   };
