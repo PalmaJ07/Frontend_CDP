@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Search, DollarSign, User, UserCheck, FileText, ChevronLeft, ChevronRight, Download, FileSpreadsheet } from 'lucide-react';
 import { apiService } from '../../services/api';
 
@@ -54,6 +54,7 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPagesFromApi, setTotalPagesFromApi] = useState(0);
+  const [totalPrecioFinal, setTotalPrecioFinal] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   
@@ -112,6 +113,7 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
       setCitas(response.results || []);
       setTotalCount(response.count || 0);
       setTotalPagesFromApi(response.total_pages || 0);
+      setTotalPrecioFinal(response.total_precio_final || 0);
       setHasNext(!!response.next);
       setHasPrevious(!!response.previous);
 
@@ -124,22 +126,13 @@ const ReporteCitas: React.FC<ReporteCitasProps> = ({ onBack }) => {
     }
   };
 
-  // Calcular resumen del reporte
-  const resumen: ReporteResumen = useMemo(() => {
-    // Calcular total de ingresos basado en los aranceles
-    const totalIngresos = citas.reduce((total, cita) => {
-      // Aquí podrías obtener el precio del arancel si está disponible
-      // Por ahora usaremos un valor fijo o podrías agregarlo a la respuesta de la API
-      return total + 250; // Valor temporal, debería venir del arancel
-    }, 0);
-
-    return {
-      totalRegistros: totalCount,
-      totalIngresos,
-      fechaInicio: fechaInicio || 'No especificada',
-      fechaFin: fechaFin || 'No especificada'
-    };
-  }, [citas, totalCount, fechaInicio, fechaFin]);
+  // Resumen del reporte
+  const resumen: ReporteResumen = {
+    totalRegistros: totalCount,
+    totalIngresos: totalPrecioFinal,
+    fechaInicio: fechaInicio || 'No especificada',
+    fechaFin: fechaFin || 'No especificada'
+  };
 
   const handleGenerarReporte = () => {
     setCurrentPage(1);

@@ -203,6 +203,12 @@ const ProcedimientosList: React.FC = () => {
     setProcedimientosRegistrados(procedimientosRegistrados.filter(p => p.id !== id));
   };
 
+  const actualizarPrecio = (id: string, nuevoPrecio: number) => {
+    setProcedimientosRegistrados(prev =>
+      prev.map(p => p.id === id ? { ...p, precio: nuevoPrecio } : p)
+    );
+  };
+
   const getTotalPrice = () => {
     return procedimientosRegistrados.reduce((total, proc) => total + proc.precio, 0);
   };
@@ -235,18 +241,20 @@ const ProcedimientosList: React.FC = () => {
         fecha: fechaGeneral,
         total: getTotalPrice(),
         detalles: procedimientosRegistrados.map(proc => ({
-          id_arancel: proc.arancelId
+          id_arancel: proc.arancelId,
+          precio: proc.precio
         }))
       };
 
-      // Crear la factura
-      await apiService.createInvoice(invoiceData);
+      // Crear la factura y obtener el ID
+      const facturaResponse = await apiService.createInvoice(invoiceData);
+      const facturaId = facturaResponse.factura.id;
 
-      // Actualizar citas pendientes si las hay
+      // Actualizar citas pendientes si las hay, enviando el ID de la factura
       if (pendingAppointments.length > 0) {
         for (const appointment of pendingAppointments) {
           try {
-            await apiService.updateAppointmentPayment(appointment.id);
+            await apiService.updateAppointmentPayment(appointment.id, facturaId);
           } catch (error) {
             console.error(`Error updating appointment ${appointment.id}:`, error);
           }
@@ -279,7 +287,7 @@ const ProcedimientosList: React.FC = () => {
   };
 
   const formatPrice = (price: number) => {
-    return `$ ${price.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `C$ ${price.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const selectedArancel = getArancelById(parseInt(selectedProcedimiento));
@@ -388,9 +396,14 @@ const ProcedimientosList: React.FC = () => {
                               </div>
                               <div className="flex items-center space-x-2">
                                 <DollarSign className="w-3 h-3 text-green-600" />
-                                <span className="text-sm font-semibold text-green-700">
-                                  {formatPrice(procedimiento.precio)}
-                                </span>
+                                <input
+                                  type="number"
+                                  value={procedimiento.precio}
+                                  onChange={(e) => actualizarPrecio(procedimiento.id, parseFloat(e.target.value) || 0)}
+                                  className="w-28 px-2 py-1 text-sm font-semibold text-green-700 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white"
+                                  min="0"
+                                  step="0.01"
+                                />
                               </div>
                             </div>
                             <button

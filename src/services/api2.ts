@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 class ApiService {
   private getHeaders() {
@@ -51,7 +51,7 @@ class ApiService {
 
   async getDoctors(page: number = 1, search: string = '') {
     try {
-      let endpoint = `/doctores/index/`;
+      let endpoint = `/doctores/`;
       const params = new URLSearchParams();
       
       if (page > 1) {
@@ -135,7 +135,7 @@ class ApiService {
     }
   }
 
-    async updatePatient(patientId: number, patientData: any) {
+  async updatePatient(patientId: number, patientData: any) {
     try {
       const response = await fetch(`${API_BASE_URL}/pacientes/update/${patientId}/`, {
         method: 'PUT',
@@ -155,7 +155,7 @@ class ApiService {
     }
   }
 
-    async deletePatient(patientId: number) {
+  async deletePatient(patientId: number) {
     try {
       const response = await fetch(`${API_BASE_URL}/pacientes/delete/${patientId}/`, {
         method: 'DELETE',
@@ -174,7 +174,7 @@ class ApiService {
     }
   }
 
-    async getMedicalHistory(patientId: number) {
+  async getMedicalHistory(patientId: number) {
     try {
       const response = await fetch(`${API_BASE_URL}/pacientes/historicos/${patientId}/`, {
         method: 'GET',
@@ -245,7 +245,7 @@ class ApiService {
     }
   }
 
-    async getAppointments(page: number = 1, search: string = '') {
+  async getAppointments(page: number = 1, search: string = '') {
     try {
       let endpoint = `/citas/`;
       const params = new URLSearchParams();
@@ -298,7 +298,7 @@ class ApiService {
     }
   }
 
-    async updateAppointment(appointmentId: number, appointmentData: any) {
+  async updateAppointment(appointmentId: number, appointmentData: any) {
     try {
       const response = await fetch(`${API_BASE_URL}/citas/editar/${appointmentId}/`, {
         method: 'PATCH',
@@ -318,7 +318,7 @@ class ApiService {
     }
   }
 
-    async deleteAppointment(appointmentId: number) {
+  async deleteAppointment(appointmentId: number) {
     try {
       const response = await fetch(`${API_BASE_URL}/citas/eliminar/${appointmentId}/`, {
         method: 'DELETE',
@@ -336,7 +336,7 @@ class ApiService {
       throw error;
     }
   }
-  
+
   async getArancelesAll(tipo: 'c' | 'p') {
     try {
       const response = await fetch(`${API_BASE_URL}/procedimientos/aranceles/all/?tipo=${tipo}`, {
@@ -391,7 +391,7 @@ class ApiService {
     }
   }
 
-    async createInvoice(invoiceData: any) {
+  async createInvoice(invoiceData: any) {
     try {
       const response = await fetch(`${API_BASE_URL}/procedimientos/facturas/crear/`, {
         method: 'POST',
@@ -411,7 +411,7 @@ class ApiService {
     }
   }
 
-   async getAllAranceles() {
+  async getAllAranceles() {
     try {
       const response = await fetch(`${API_BASE_URL}/procedimientos/aranceles/all/`, {
         method: 'GET',
@@ -433,14 +433,13 @@ class ApiService {
     try {
       const bodyData: any = {
         estado_pago: true,
-        estado: "Completada"
+        estado: "Completado"
       };
 
       if (facturaId !== undefined) {
         bodyData.factura = facturaId;
       }
-      console.log("facturaId:", facturaId);
-      console.log("bodyData:", bodyData);
+
       const response = await fetch(`${API_BASE_URL}/citas/editar/${appointmentId}/`, {
         method: 'PATCH',
         headers: this.getHeaders(),
@@ -504,7 +503,7 @@ class ApiService {
     }
   }
 
-   async getFacturas(page: number = 1, filters: {
+  async getFacturas(page: number = 1, filters: {
     fecha?: string;
     fecha_inicio?: string;
     fecha_fin?: string;
